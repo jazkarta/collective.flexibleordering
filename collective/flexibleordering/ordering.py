@@ -1,23 +1,22 @@
 from blist import sorteddict
 from zope.interface import implements
 from zope.component import adapts
-from zope.component import queryAdapter
 from Acquisition import aq_base
 from plone.folder.interfaces import IOrderableFolder
-from plone.memoize import instance
 
-from .interfaces import IOrderingKey
 from .interfaces import IFlexibleOrdering
 
 
 class FlexibleIdOrdering(object):
-    """This implementation uses an ordered dictionary for storing an
-    sort-key -> id mapping"""
+    """This ordering implementation uses an ordered dictionary for
+    storing an sort-key -> id mapping.  It sorts using id by default, but
+    it's trivial to provide your own version with custom sort key
+    generation.  See below for a more useful example."""
+
     implements(IFlexibleOrdering)
     adapts(IOrderableFolder)
 
     _order_attr = '_flexible_ordering'
-    ordering_name = u'id'
 
     def __init__(self, context):
         self.context = context
@@ -101,17 +100,6 @@ class FlexibleIdOrdering(object):
         self.context._p_changed = changed      # the order was changed
         return -1
 
-    @property
-    @instance.memoize
-    def key_func(self):
-        ordering = queryAdapter(self.context, IOrderingKey,
-                                name=self.ordering_name)
-        if ordering is not None:
-            return ordering.get_key
-
-        # Fall back to using the id for ordering
-        return lambda o: unicode(o.getId())
-
     def _pos_for_id(self, id_):
         order = self.order
         ids = order.viewvalues()
@@ -126,8 +114,30 @@ class FlexibleIdOrdering(object):
             keys = self.order.viewkeys()
             return keys[index]
 
+    def key_func(self, obj):
+        return obj.getId()
+
 
 class FlexibleTitleOrdering(FlexibleIdOrdering):
-    # We don't actually need to implement the IOrderingKey adapter
-    # since id sorting is the fallback behavior.
-    ordering_name = u'title'
+    """Ordering adapter that sorts by title"""
+
+    def key_func(self, obj):
+        # Try Title Accessor
+        if hasattr(aq_base(obj), 'Title'):
+            title = obj.Title
+            if callable(title):
+                title = title()
+        else:
+            # Try title attribute
+            title = getattr(aq_base(obj), 'title', None)
+
+        if title is None:
+            # Give up
+            title = u''
+
+        if not isinstance(title, unicode):
+            # All keys must be unicode
+            title = str(title).decode('utf-8')
+
+        # Append id to title to ensure uniqueness of sort keys
+        return title.lower() + u'-' + unicode(obj.getId())

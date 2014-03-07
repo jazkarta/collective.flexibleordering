@@ -10,10 +10,6 @@
   <adapter factory=".ordering.FlexibleTitleOrdering"
            name="flexible-title-ordering"
            />
-  
-  <adapter factory=".keys.TitleOrderingKey"
-           name="title"
-           />
 
   <subscriber handler=".subscriber.update_ordered_content_handler"
               for="Products.CMFCore.interfaces.IDynamicType zope.lifecycleevent.IObjectModifiedEvent"
