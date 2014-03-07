@@ -77,12 +77,14 @@ class FlexibleIdOrdering(object):
 
         raise ValueError('No object with id "%s" exists.' % id)
 
-    def orderObjects(self):
+    def orderObjects(self, clear=True):
         """Implement initial ordering"""
         key_func = self.key_func
         context = aq_base(self.context)
         order = self.order
         changed = False
+        if clear:
+            order.clear()
         if len(order) != 0:
             items = tuple(order.items())
         else:
