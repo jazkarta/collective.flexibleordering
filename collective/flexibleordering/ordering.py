@@ -35,7 +35,6 @@ class FlexibleIdOrdering(object):
         return getattr(context, order_attr)
 
     def notifyAdded(self, id):
-        assert not id in self.order
         context = aq_base(self.context)
         obj = context._getOb(id)
         key = self.key_func(obj)
@@ -45,13 +44,13 @@ class FlexibleIdOrdering(object):
     def notifyRemoved(self, id):
         """ see interfaces.py """
         context = aq_base(self.context)
-        obj = context._getOb(id)
-        key = self.key_func(obj)
         try:
+            obj = context._getOb(id)
+            key = self.key_func(obj)
             del self.order[key]
             self.context._p_changed = True      # the order was changed
             return
-        except (KeyError, ValueError):
+        except (AttributeError, KeyError, ValueError):
             # The key may no longer be correct, try to fetch by id
             key = self._key_for_id(id)
             if key is not None:
@@ -91,7 +90,10 @@ class FlexibleIdOrdering(object):
             # Initial ordering of unordered items
             items = [(None, id_) for id_ in context.objectIds(ordered=False)]
         for key, id_ in items:
-            obj = getattr(context, id_)
+            try:
+                obj = context[id_]
+            except (TypeError, KeyError):
+                obj = getattr(context, id_)
             new_key = key_func(obj)
             if new_key != key:
                 order[new_key] = id_

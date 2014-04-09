@@ -23,7 +23,7 @@ class FakeObj(Implicit):
 
 class FakeFolder(Implicit):
 
-    def __init__(self, ids=(), ordering=FlexibleTitleOrdering):
+    def __init__(self, ordering=FlexibleTitleOrdering, ids=()):
         self.ids = ids
         self._ordering = ordering
 
@@ -39,8 +39,8 @@ class FakeFolder(Implicit):
 
 class TestOrdering(unittest.TestCase):
 
-    def _makeOne(self, ordering=FlexibleTitleOrdering):
-        return FakeFolder(ordering=ordering).getOrdering()
+    def _makeOne(self, ordering=FlexibleTitleOrdering, ids=()):
+        return FakeFolder(ids=ids, ordering=ordering).getOrdering()
 
     def test_insert(self):
         ordered = self._makeOne(FlexibleIdOrdering)
@@ -61,6 +61,7 @@ class TestOrdering(unittest.TestCase):
         ordered.context.a = FakeObj('a', 'Title 2')
         ordered.notifyAdded('a')
 
+        del ordered.context.c
         ordered.notifyRemoved('c')
         self.assertEquals(ordered.idsInOrder(), ['a'])
 
@@ -78,10 +79,10 @@ class TestOrdering(unittest.TestCase):
                           [u'title 1-c', u'title 2-a'])
 
     def test_title_change(self):
-        ordered = self._makeOne()
+        ordered = self._makeOne(ids=('a', 'c'))
         ordered.context.c = FakeObj('c', 'Title 1')
-        ordered.notifyAdded('c')
         ordered.context.a = FakeObj('a', 'Title 2')
+        ordered.notifyAdded('c')
         ordered.notifyAdded('a')
 
         ordered.context.c.title = 'Title 3'
