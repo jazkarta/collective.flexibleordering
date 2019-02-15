@@ -28,7 +28,8 @@ class FlexibleIdOrdering(object):
         # We store ordering on the context.  This could get quite
         # large, but it will be used often enough that including it on
         # the object probably makes sense.
-        if not hasattr(context, self._order_attr):
+        order_obj = getattr(context, order_attr, None)
+        if order_obj is None or getattr(order_obj, 'viewkeys', None) is None:
             setattr(context, order_attr, sorteddict())
             # Force initial ordering
             self.orderObjects()
