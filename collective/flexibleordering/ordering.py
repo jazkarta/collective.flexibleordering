@@ -2,7 +2,9 @@ from blist import sorteddict
 from zope.interface import implements
 from zope.component import adapts
 from Acquisition import aq_base
+from zope.interface import alsoProvides
 from plone.folder.interfaces import IOrderableFolder
+from plone.protect.interfaces import IDisableCSRFProtection
 
 from .interfaces import IFlexibleOrdering
 
@@ -33,6 +35,10 @@ class FlexibleIdOrdering(object):
             setattr(context, order_attr, sorteddict())
             # Force initial ordering
             self.orderObjects()
+            # Override CSRF protection if we can
+            request = getattr(self.context, 'REQUEST', None)
+            if request is not None:
+                alsoProvides(request, IDisableCSRFProtection)
         return getattr(context, order_attr)
 
     def notifyAdded(self, id):

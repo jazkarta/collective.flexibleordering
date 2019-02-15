@@ -27,6 +27,8 @@ setup(name='collective.flexibleordering',
           'setuptools',
           # -*- Extra requirements: -*-
           'blist',
+          'plone.folder',
+          'plone.protect',
       ],
       entry_points="""
       # -*- Entry points: -*-
