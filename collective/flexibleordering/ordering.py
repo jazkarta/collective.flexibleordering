@@ -5,6 +5,8 @@ from Acquisition import aq_base
 from zope.interface import alsoProvides
 from plone.folder.interfaces import IOrderableFolder
 from plone.protect.interfaces import IDisableCSRFProtection
+from ZPublisher.HTTPRequest import HTTPRequest
+from zope.publisher.http import HTTPRequest as zpub_HTTPRequest
 
 from .interfaces import IFlexibleOrdering
 
@@ -37,7 +39,7 @@ class FlexibleIdOrdering(object):
             self.orderObjects()
             # Override CSRF protection if we can
             request = getattr(self.context, 'REQUEST', None)
-            if request is not None:
+            if isinstance(request, (HTTPRequest, zpub_HTTPRequest)):
                 alsoProvides(request, IDisableCSRFProtection)
         return getattr(context, order_attr)
 
