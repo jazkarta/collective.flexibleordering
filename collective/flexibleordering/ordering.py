@@ -1,5 +1,5 @@
 from blist import sorteddict
-from zope.interface import implements
+from zope.interface import implementer
 from zope.component import adapts
 from Acquisition import aq_base
 from zope.interface import alsoProvides
@@ -11,13 +11,13 @@ from zope.publisher.http import HTTPRequest as zpub_HTTPRequest
 from .interfaces import IFlexibleOrdering
 
 
+@implementer(IFlexibleOrdering)
 class FlexibleIdOrdering(object):
     """This ordering implementation uses an ordered dictionary for
     storing an sort-key -> id mapping.  It sorts using id by default, but
     it's trivial to provide your own version with custom sort key
     generation.  See below for a more useful example."""
 
-    implements(IFlexibleOrdering)
     adapts(IOrderableFolder)
 
     _order_attr = '_flexible_ordering'
