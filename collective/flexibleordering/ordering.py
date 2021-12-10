@@ -33,7 +33,7 @@ class FlexibleIdOrdering(object):
         # large, but it will be used often enough that including it on
         # the object probably makes sense.
         order_obj = getattr(context, order_attr, None)
-        if order_obj is None or getattr(order_obj, 'viewkeys', None) is None:
+        if order_obj is None or getattr(order_obj, 'keys', None) is None:
             setattr(context, order_attr, sorteddict())
             # Force initial ordering
             self.orderObjects()
@@ -67,13 +67,13 @@ class FlexibleIdOrdering(object):
                 self.context._p_changed = True      # the order was changed
 
     def idsInOrder(self):
-        return list(self.order.viewvalues())
+        return list(self.order.values())
 
     def getObjectPosition(self, id):
         context = aq_base(self.context)
         obj = context._getOb(id)
         key = self.key_func(obj)
-        keys = self.order.viewkeys()
+        keys = self.order.keys()
         try:
             return keys.index(key)
         except (KeyError, ValueError):
@@ -115,7 +115,7 @@ class FlexibleIdOrdering(object):
 
     def _pos_for_id(self, id_):
         order = self.order
-        ids = order.viewvalues()
+        ids = order.values()
         try:
             return ids.index(id_)
         except (KeyError, ValueError):  # Looks like it's not here
@@ -124,7 +124,7 @@ class FlexibleIdOrdering(object):
     def _key_for_id(self, id_):
         index = self._pos_for_id(id_)
         if index is not None:
-            keys = self.order.viewkeys()
+            keys = self.order.keys()
             return keys[index]
 
     def key_func(self, obj):
@@ -148,9 +148,9 @@ class FlexibleTitleOrdering(FlexibleIdOrdering):
             # Give up
             title = u''
 
-        if not isinstance(title, unicode):
+        if isinstance(title, bytes):
             # All keys must be unicode
-            title = str(title).decode('utf-8')
+            title = title.decode('utf-8')
 
         # Append id to title to ensure uniqueness of sort keys
-        return title.lower() + u'-' + unicode(obj.getId())
+        return title.lower() + u'-' + str(obj.getId())
